@@ -1,3 +1,4 @@
 .env
-.env - DO NOT SHARE.txt
 .env.*
+venv/ 
+__pycache__/ 
