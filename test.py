@@ -40,7 +40,7 @@ def send_email(news_list):
     msg = EmailMessage()
     msg["Subject"] = "Daily News"
     msg["From"] = EMAIL_ADDRESS
-    msg["To"] = EMAIL_ADDRESS
+    msg["To"] = EMAIL_ADDRESS2
 
     email_contents = "Here are the most reent news stories:\n"
     for i, article in enumerate(news_list):
@@ -57,9 +57,9 @@ def send_email(news_list):
         smtp.login(EMAIL_ADDRESS, EMAIL_PASS)
         smtp.send_message(msg)
 
-    return "email sent successfully"
+    print("email sent successfully")
 
 # uncomment to send email
-# news = get_news()
-# send_email(news)
+news = get_news()
+send_email(news)
 
