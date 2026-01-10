@@ -9,12 +9,13 @@ load_dotenv()
 
 EMAIL_PASS = os.getenv("EMAIL_PASS")
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_ADDRESS2 = os.getenv("EMAIL_ADDRESS2")
 
 server = "http://127.0.0.1:5000/"
 
 response = requests.get(server + "/")
 
-if response.status_code == 200:
+def get_news():
     news_list = []
     data = response.json()
     articles = data['news']['articles']
@@ -28,15 +29,14 @@ if response.status_code == 200:
             "publish time": datetime.fromisoformat(article['publishedAt'])
         }
         news_list.append(news_dict)
-    
+
     # sort by date published (newest first)
     news_list.sort(key=lambda x: x["publish time"], reverse=True)
 
-else:
-    print("Error:", response.status_code)
+    return news_list
 
 
-def send_email():
+def send_email(news_list):
     msg = EmailMessage()
     msg["Subject"] = "Daily News"
     msg["From"] = EMAIL_ADDRESS
@@ -57,6 +57,9 @@ def send_email():
         smtp.login(EMAIL_ADDRESS, EMAIL_PASS)
         smtp.send_message(msg)
 
-    print("Email sent successfully!")
+    return "email sent successfully"
 
-send_email()
+# uncomment to send email
+# news = get_news()
+# send_email(news)
+
