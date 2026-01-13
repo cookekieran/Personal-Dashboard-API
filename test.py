@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 import smtplib
 from email.message import EmailMessage
+import pandas as pd
 
 load_dotenv()
 
@@ -35,6 +36,34 @@ def get_news():
 
     return news_list
 
+def get_fred():
+    data_dict = {}
+    all_dates = set()
+    raw_json = response.json()
+    macro_data = raw_json["macro"]
+
+    for data in macro_data.values():
+        for obs in data["observations"]:
+            all_dates.add(obs["date"])
+
+    all_dates = sorted(all_dates)
+    date_index = {date: i for i, date in enumerate(all_dates)}
+    
+    data_dict["date"] = pd.to_datetime(all_dates)
+
+    for macro_metric in macro_data.keys():
+        data_dict[macro_metric] = [None] * len(all_dates) # intalise null
+        observations = macro_data[macro_metric]["observations"]
+
+        for obs in observations:
+            idx = date_index[obs["date"]]
+            value = obs["value"]
+            data_dict[macro_metric][idx] = pd.to_numeric(value, errors = "coerce")
+    
+    df = pd.DataFrame(data_dict)
+
+    return df
+
 
 def send_email(news_list):
     msg = EmailMessage()
@@ -60,6 +89,8 @@ def send_email(news_list):
     print("email sent successfully")
 
 # uncomment to send email
-news = get_news()
-send_email(news)
+# news = get_news()
+# send_email(news)
 
+df = get_fred()
+print(df.head(10))
