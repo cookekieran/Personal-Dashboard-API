@@ -32,7 +32,7 @@ def get_fred(raw_json):
     all_dates = sorted(all_dates)
     date_index = {date: i for i, date in enumerate(all_dates)}
     
-    data_dict["date"] = pd.to_datetime(all_dates)
+    data_dict["date"] = pd.to_datetime(all_dates, errors = "coerce")
 
     for macro_metric in macro_data.keys():
         data_dict[macro_metric] = [None] * len(all_dates) # intalise null
