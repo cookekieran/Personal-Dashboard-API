@@ -25,6 +25,8 @@ print("API KEYS loaded successfully")
 NEWS_BASE = "https://newsapi.org/v2"
 FRED_BASE = "https://api.stlouisfed.org"
 
+START_DATE = "2010-01-01"
+
 
 SERIES = {
     "fed_funds": "EFFR",
@@ -50,7 +52,7 @@ def get_news(category="business"):
     return response.json()
 
 def get_fred(series_id):
-    url = f"{FRED_BASE}/fred/series/observations?series_id={series_id}&api_key={FRED_API_KEY}&file_type=json"
+    url = f"{FRED_BASE}/fred/series/observations?series_id={series_id}&api_key={FRED_API_KEY}&file_type=json&observation_start={START_DATE}"
     response = requests.get(url)
     if response.status_code != 200:
         return f"error, {response.status_code}"
