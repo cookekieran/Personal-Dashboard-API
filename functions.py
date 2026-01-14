@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 def get_news(raw_json):
     news_list = []
     articles = raw_json['news']['articles']
@@ -11,7 +10,7 @@ def get_news(raw_json):
             "author": article['author'],
             "url": article['url'],
             "title": article['title'],
-            "publish time": pd.to_datetime(article['publishedAt'])
+            "publish time": pd.to_datetime(article['publishedAt'], errors = "coerce")
         }
         news_list.append(news_dict)
 
