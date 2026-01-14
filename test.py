@@ -1,96 +1,16 @@
 import requests
-import os
-from dotenv import load_dotenv
-from datetime import datetime
-import smtplib
-from email.message import EmailMessage
-import pandas as pd
+from functions import get_news, get_fred
+from email_script import send_email
 
-load_dotenv()
 
-EMAIL_PASS = os.getenv("EMAIL_PASS")
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
-EMAIL_ADDRESS2 = os.getenv("EMAIL_ADDRESS2")
 
 server = "http://127.0.0.1:5000/"
 
 response = requests.get(server + "/")
 
-def get_news():
-    news_list = []
-    data = response.json()
-    articles = data['news']['articles']
+raw_json = response.json()
 
-    for article in articles:
-        news_dict = {
-            "source": article['source']['name'],
-            "author": article['author'],
-            "url": article['url'],
-            "title": article['title'],
-            "publish time": datetime.fromisoformat(article['publishedAt'])
-        }
-        news_list.append(news_dict)
+news = get_news(raw_json)
+macro_df = get_fred(raw_json)
 
-    # sort by date published (newest first)
-    news_list.sort(key=lambda x: x["publish time"], reverse=True)
-
-    return news_list
-
-def get_fred():
-    data_dict = {}
-    all_dates = set()
-    raw_json = response.json()
-    macro_data = raw_json["macro"]
-
-    for data in macro_data.values():
-        for obs in data["observations"]:
-            all_dates.add(obs["date"])
-
-    all_dates = sorted(all_dates)
-    date_index = {date: i for i, date in enumerate(all_dates)}
-    
-    data_dict["date"] = pd.to_datetime(all_dates)
-
-    for macro_metric in macro_data.keys():
-        data_dict[macro_metric] = [None] * len(all_dates) # intalise null
-        observations = macro_data[macro_metric]["observations"]
-
-        for obs in observations:
-            idx = date_index[obs["date"]]
-            value = obs["value"]
-            data_dict[macro_metric][idx] = pd.to_numeric(value, errors = "coerce")
-    
-    df = pd.DataFrame(data_dict)
-
-    return df
-
-
-def send_email(news_list):
-    msg = EmailMessage()
-    msg["Subject"] = "Daily News"
-    msg["From"] = EMAIL_ADDRESS
-    msg["To"] = EMAIL_ADDRESS2
-
-    email_contents = "Here are the most reent news stories:\n"
-    for i, article in enumerate(news_list):
-        source = article["source"]
-        title = article['title']
-        url = article['url']
-        publish_time = article['publish time'].strftime("%d %b %Y %H:%M")
-        email_contents += f"{i}. {source} -  {title} ({publish_time})\n{url}\n\n"
-    
-    msg.set_content(email_contents)
-    
-
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-        smtp.login(EMAIL_ADDRESS, EMAIL_PASS)
-        smtp.send_message(msg)
-
-    print("email sent successfully")
-
-# uncomment to send email
-# news = get_news()
-# send_email(news)
-
-df = get_fred()
-print(df.head(10))
+send_email(news)
