@@ -1,7 +1,9 @@
-def get_news():
+import pandas as pd
+
+
+def get_news(raw_json):
     news_list = []
-    data = response.json()
-    articles = data['news']['articles']
+    articles = raw_json['news']['articles']
 
     for article in articles:
         news_dict = {
@@ -9,7 +11,7 @@ def get_news():
             "author": article['author'],
             "url": article['url'],
             "title": article['title'],
-            "publish time": datetime.fromisoformat(article['publishedAt'])
+            "publish time": pd.to_datetime(article['publishedAt'])
         }
         news_list.append(news_dict)
 
@@ -19,10 +21,9 @@ def get_news():
     return news_list
 
 
-def get_fred():
+def get_fred(raw_json):
     data_dict = {}
     all_dates = set()
-    raw_json = response.json()
     macro_data = raw_json["macro"]
 
     for data in macro_data.values():
